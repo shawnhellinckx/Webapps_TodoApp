@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>I need to remember</title>
+
+    
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.10/angular.min.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.2.10/angular-ui-router.js"></script>
+   
+	<script src="/javascripts/todoApp.js"></script>
+
+    <link rel='stylesheet' href='/stylesheets/style.css'/>
+</head>
+<body ng-app="todoApp">
+	<ui-view></ui-view>
+	
+	<script type="text/ng-template" id="/home.html">
+	<div>
+		<form ng-submit="maakNieuw()">
+			<input type="text" placeholder="Title" ng-model="title">
+			<input type="text" placeholder="Wat moet je nog doen?" ng-model="todo">
+			<button type="submit">Maak een nieuwe todo</button>
+		</form>
+	</div>
+	<div ng-repeat="todo in lijstTodo.todos">
+	<dl>
+		<dt>{{todo.title}}</dt>
+		<dd>{{todo.message}}</dd>
+	</dl>
+		 
+	</div>
+	</script>
+</body>
+
+
+</html>
