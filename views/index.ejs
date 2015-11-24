@@ -10,6 +10,9 @@
 	<script src="/javascripts/todoApp.js"></script>
 
     <link rel='stylesheet' href='/stylesheets/style.css'/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"/>
+     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 </head>
 <body ng-app="todoApp">
 	<ui-view></ui-view>
@@ -17,17 +20,20 @@
 	<script type="text/ng-template" id="/home.html">
 	<div>
 		<form ng-submit="maakNieuw()">
-			<input type="text" placeholder="Title" ng-model="title">
+			<input type="date" placeholder="Datum" ng-model="datum.date">
 			<input type="text" placeholder="Wat moet je nog doen?" ng-model="todo">
 			<button type="submit">Maak een nieuwe todo</button>
 		</form>
 	</div>
 	<div ng-repeat="todo in lijstTodo.todos">
-	<dl>
-		<dt>{{todo.title}}</dt>
-		<dd>{{todo.message}}</dd>
-	</dl>
-		 
+<dl>
+	<dt>{{todo.datum|date:'mediumDate'}}</dt>
+	<div ng-repeat="m in todo.message">
+	<dd>{{m.message}}</dd>
+	</div>
+</dl>
+	
+	
 	</div>
 	</script>
 </body>
