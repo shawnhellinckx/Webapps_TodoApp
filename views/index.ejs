@@ -25,11 +25,11 @@
 			<button type="submit">Maak een nieuwe todo</button>
 		</form>
 	</div>
-	<div ng-repeat="todo in lijstTodo.todos">
+	<div ng-repeat="todo in lijstTodo.todos | orderBy: 'datum'">
 <dl>
 	<dt>{{todo.datum|date:'mediumDate'}}</dt>
-	<div ng-repeat="m in todo.message">
-	<dd>{{m.message}}</dd>
+	<div ng-repeat="message in todo.messages">
+	<dd>{{message}}</dd>
 	</div>
 </dl>
 	

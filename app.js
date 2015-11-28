@@ -7,7 +7,6 @@ var bodyParser = require('body-parser');
 
 var mongoose = require('mongoose');
 require('./models/Todos');
-require('./models/Messages');
 mongoose.connect('mongodb://localhost/todo');
 
 var routes = require('./routes/index');

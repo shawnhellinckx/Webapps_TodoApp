@@ -5,7 +5,16 @@ var mongoose = require('mongoose');
 var Todo = mongoose.model('Todo');
 
 
-
+router.param('idTodo', function(req, res, next, idTodo) {
+    console.log("param");
+    var query = Todo.findById(idTodo, function(err, todo) {
+        if (!todo) {
+            return next(new Error('Geen todo gevonden'));
+        }
+        req.todo = todo;
+        return next();
+    });
+});
 /* GET home page. */
 router.get('/', function(req, res, next) {
     res.render('index', {
@@ -24,32 +33,10 @@ router.get('/todos', function(req, res, next) {
     });
 });
 
-router.param('idTodo', function(req, res, next, idTodo) {
-    console.log('params');
-    var query = Todo.findById(idTodo);
-    query.exec(function(err, todo) {
-        if (err) {
-            return next(err);
-        }
-        if (!todo) {
-            return next(new Error('Geen todo gevonden'));
-        }
-        req.todo = todo;
-        return next();
-    });
-});
-
 //GET one todo
 router.get('/todos/:idTodo', function(req, res, next) {
-    req.todo.populate('messages', function(err, todo) {
-        if (err) {
-            return next(err);
-        }
-        res.json(todo);
-
-    });
+    res.json(req.todo);
 });
-
 //POST create new todo
 router.post('/todos', function(req, res, next) {
     console.log("router.post");
@@ -62,24 +49,21 @@ router.post('/todos', function(req, res, next) {
         res.json(todo);
     });
 });
+router.post('/todos/:idTodo/message', function(req, res, next) {
+    var message = req.body;
+    var todo = req.todo;
+    console.log(message.message);
+    
+    req.todo.messages.push(message.message);
+    req.todo.save(function(err, todo) {
 
-router.post('/todos/:idTodo/messages', function(req, res, next) {
-    console.log("todos/messages");
-    var message = new Message(req.body.message);
-    message.todo = req.todo;
-
-    message.save(function(err, message) {
-        if (err) {
-            return next(err);
-        }
-        req.todo.message.push(message);
-        req.todo.save(function(err, todo) {
-            if (err) {
-                return next(err);
-            }
-            res.json(message);
-        });
+        res.json(message);
     });
+
+    console.log(todo.messages);
+
 });
+
+
 
 module.exports = router;

@@ -25,22 +25,36 @@ app.factory('todos', ['$http', function($http) {
 
     todoList.getAll = function() {
         return $http.get('/todos').success(function(data) {
-            console.log(data);
             angular.copy(data, todoList.todos);
         });
     };
-   
+
     todoList.maakNieuw = function(todo) {
-        console.log("todoList.maakNieuw");
-        return $http.post('/todos', todo).success(function(data) {});
+        return $http.post('/todos', todo).success(function(data) {
+            todoList.todos.push(data);
+        });
     };
-    todoList.getOneTodo = function(id) {
-        return $http.get('/todos/todo',id).then(function(res) {
+    todoList.getOne = function(id) {
+        return $http.get("/todos/" + id).then(function(res) {
             return res.data;
         });
     };
-    todoList.addMessage = function(id, message) {
-        return $http.post('/todos/' + id + '/messages', message).success(function(data) {});
+    todoList.voegToe = function(id, message) {
+        var config = {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        };
+        return $http.post('/todos/' + id + '/message', message, config).
+        success(function(data) {
+            console.log(data);
+            for (var i = todoList.todos.length - 1; i >= 0; i--) {
+                if (todoList.todos[i]._id === id) {
+                    todoList.todos[i].messages.push(data.message);
+                    break;
+                }
+            };
+        });
     };
     return todoList;
 }]);
@@ -50,41 +64,51 @@ app.controller('MainCtrl', ['$scope', 'todos', function($scope, todos) {
     $scope.lijstTodo = todos;
     $scope.datum = {};
     $scope.datum.date = new Date();
-    $scope.todo = '';
 
     $scope.maakNieuw = function() {
-        if ($scope.datum != null && $scope.todo != '') {
-
-            var zitErAlIn = false;
+        if ($scope.datum.date != null && $scope.todo != null && $scope.todo != '') {
+            //eerst checken of dat het er al in zit
+            //indien het er nog niet inzit: maakNieuw
+            //indien het er inzit: update messages
+            var datumZitAlInDeLijst = false;
+            var datumVanTodo = new Date($scope.datum.date);
+            var datumVanTodoModified = datumVanTodo.getDate() + '/' + datumVanTodo.getMonth() + '/' + datumVanTodo.getFullYear();
             var id = 0;
 
-            for (var i = $scope.lijstTodo.todos.length - 1; i >= 0; i--) {
-                var datumI = new Date($scope.lijstTodo.todos[i].datum);
-                var datumTodo = new Date($scope.datum.date);
+            for (var i in $scope.lijstTodo.todos) {
+                var datumVanFor = new Date($scope.lijstTodo.todos[i].datum);
+                var datumVanForModified = datumVanFor.getDate() + '/' + datumVanTodo.getMonth() + '/' + datumVanTodo.getFullYear();
 
-                if ((datumI.getDate() && datumI.getDay() && datumI.getFullYear()) === (datumTodo.getDate() && datumTodo.getDay() && datumTodo.getFullYear())) {
-                    zitErAlIn = true;
+                if (datumVanForModified === datumVanTodoModified) {
+                    datumZitAlInDeLijst = true;
                     id = $scope.lijstTodo.todos[i]._id;
                     break;
                 }
-            };
-            if (!zitErAlIn) {
-                console.log("ziterNIETin");
-                todos.maakNieuw({
-                    datum: $scope.datum.date.toString(),
-                    message: $scope.todo
-                });
+            }
+
+            if (datumZitAlInDeLijst) {
+                var message = {
+                    "message": $scope.todo
+                };
+                $scope.lijstTodo.voegToe(id, message);
             } else {
-                console.log("ziterWELin");
-                todos.addMessage(id, $scope.todo).success(function(message) {
-                    $scope.todo.message.socket.push(message);
+                $scope.lijstTodo.maakNieuw({
+                    datum: $scope.datum.date,
+                    messages: $scope.todo
                 });
             }
 
 
-            $scope.datum.date = new Date();
-            $scope.todo = '';
+            for (var i = $scope.lijstTodo.todos.length - 1; i >= 0; i--) {
+                var datum = new Date($scope.lijstTodo.todos[i].datum);
+                var oneDay = datum.getDate() + '/' + datum.getMonth() + '/' + datum.getFullYear();
+            };
         }
+
+        $scope.datum.date = new Date();
+        $scope.todo = '';
+
+
     };
 
 
