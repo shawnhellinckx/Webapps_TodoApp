@@ -3,7 +3,14 @@ var router = express.Router();
 
 var mongoose = require('mongoose');
 var Todo = mongoose.model('Todo');
+var passport = require('passport');
+var User = mongoose.model('User');
+var jwt = require('express-jwt');
 
+var auth = jwt({
+    secret: 'SECRET',
+    userProperty: 'payload'
+});
 
 router.param('idTodo', function(req, res, next, idTodo) {
     console.log("param");
@@ -34,7 +41,7 @@ router.get('/todos', function(req, res, next) {
 });
 
 //GET one todo
-router.get('/todos/:idTodo', function(req, res, next) {
+router.get('/todos/:idTodo',auth, function(req, res, next) {
     res.json(req.todo);
 });
 //POST create new todo
@@ -49,11 +56,11 @@ router.post('/todos', function(req, res, next) {
         res.json(todo);
     });
 });
-router.post('/todos/:idTodo/message', function(req, res, next) {
+router.post('/todos/:idTodo/message',auth, function(req, res, next) {
     var message = req.body;
     var todo = req.todo;
     console.log(message.message);
-    
+
     req.todo.messages.push(message.message);
     req.todo.save(function(err, todo) {
 
@@ -64,6 +71,51 @@ router.post('/todos/:idTodo/message', function(req, res, next) {
 
 });
 
+router.post('/register', function(req, res, next) {
+    if (!req.body.username || !req.body.password) {
+        return res.status(400).json({
+            message: 'Please fill out all fields'
+        });
+    }
+
+    var user = new User();
+
+    user.username = req.body.username;
+
+    user.setPassword(req.body.password)
+
+    user.save(function(err) {
+        if (err) {
+            return next(err);
+        }
+
+        return res.json({
+            token: user.generateJWT()
+        })
+    });
+});
+
+router.post('/login', function(req, res, next) {
+    if (!req.body.username || !req.body.password) {
+        return res.status(400).json({
+            message: 'Please fill out all fields'
+        });
+    }
+
+    passport.authenticate('local', function(err, user, info) {
+        if (err) {
+            return next(err);
+        }
+
+        if (user) {
+            return res.json({
+                token: user.generateJWT()
+            });
+        } else {
+            return res.status(401).json(info);
+        }
+    })(req, res, next);
+});
 
 
 module.exports = router;
