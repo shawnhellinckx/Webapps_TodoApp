@@ -41,7 +41,7 @@ router.get('/todos', function(req, res, next) {
 });
 
 //GET one todo
-router.get('/todos/:idTodo',auth, function(req, res, next) {
+router.get('/todos/:idTodo', auth, function(req, res, next) {
     res.json(req.todo);
 });
 //POST create new todo
@@ -56,7 +56,7 @@ router.post('/todos', function(req, res, next) {
         res.json(todo);
     });
 });
-router.post('/todos/:idTodo/message',auth, function(req, res, next) {
+router.post('/todos/:idTodo/message', auth, function(req, res, next) {
     var message = req.body;
     var todo = req.todo;
     console.log(message.message);
@@ -115,6 +115,14 @@ router.post('/login', function(req, res, next) {
             return res.status(401).json(info);
         }
     })(req, res, next);
+});
+
+router.delete('/todos/:idTodo',auth, function(req, res, next) {
+    Todo.remove({
+        _id: req.todo._id
+    },function(err, todo){
+        res.json({'message' : 'Succesfully delted'});
+    });
 });
 
 

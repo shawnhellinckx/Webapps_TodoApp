@@ -97,9 +97,9 @@ app.factory('todos', ['$http', 'auth', function($http, auth) {
             }
         }).success(function(data) {
             angular.copy(data, todoList.todos);
+            todoList.remove();
         });
     };
-
     todoList.maakNieuw = function(todo) {
         return $http.post('/todos', todo, {
             headers: {
@@ -134,6 +134,27 @@ app.factory('todos', ['$http', 'auth', function($http, auth) {
                 }
             };
         });
+    };
+    todoList.remove = function() {
+        var date = new Date();
+
+        for (var i = todoList.todos.length - 1; i >= 0; i--) {
+            var datumVanTodoRemove = new Date(todoList.todos[i].datum);
+            datumVanTodoRemove.setDate(datumVanTodoRemove.getDate() + 1)
+            if (datumVanTodoRemove < date) {
+                var config = {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: 'Bearer ' + auth.getToken()
+                    }
+                };
+                return $http.delete('/todos/' + todoList.todos[i]._id, config).success(function(data) {
+                    todoList.getAll();
+                });
+            }
+        };
+
+
     };
     return todoList;
 }]);
